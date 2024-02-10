@@ -1,6 +1,5 @@
 using DevFreela.API.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.Extensions.Options;
 
 namespace DevFreela.API.Controllers;
