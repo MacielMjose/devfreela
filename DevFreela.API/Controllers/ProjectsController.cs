@@ -1,6 +1,8 @@
 using DevFreela.API.Models;
+using DevFreela.Application.InputModels;
+using DevFreela.Application.Services.Interfaces;
+using DevFreela.Application.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace DevFreela.API.Controllers;
 
@@ -8,42 +10,56 @@ namespace DevFreela.API.Controllers;
 [Route("[controller]")]
 public class ProjectsController : ControllerBase
 {
-    private readonly OpeningTimeOption _option;
-    public ProjectsController(IOptions<OpeningTimeOption> options)
+    private readonly IProjectService _projectService;
+
+    public ProjectsController(IProjectService projectService)
     {
-        _option = options.Value;
+        _projectService = projectService;
     }
-    
+
     [HttpGet]
     public IActionResult Get(string query)
     {
-        return Ok();
+        var projects = _projectService.GetAll(query);
+        
+        return Ok(projects);
     }
-    
+
     [HttpGet("{id}")]
     public IActionResult GetById(int id)
     {
-        return Ok();
+        var project = _projectService.GetById(id);
+
+        if (project is null)
+            return NotFound();
+        
+        return  Ok(project);
     }
-    
+
     [HttpPost]
-    public IActionResult Post([FromBody] CreateProjectModel createProjectModel)
+    public IActionResult Post([FromBody] NewProjectInputModel newProjectInputModel)
     {
-        if (createProjectModel.Title.Length > 50)
+        if (newProjectInputModel.Title.Length > 50)
+        {
+            return BadRequest();
+        }
+
+        var id = _projectService.Create(newProjectInputModel);
+        
+        return CreatedAtAction(nameof(GetById), 
+            new { Id = id }, 
+            newProjectInputModel);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult Put(int id, [FromBody] UpdatProjectInputModel updatProjectInputModel)
+    {
+        if (updatProjectInputModel.Description.Length > 200)
         {
             return BadRequest();
         }
         
-        return CreatedAtAction(nameof(GetById), new {Id = createProjectModel.Id}, createProjectModel);
-    }
-
-    [HttpPut("{id}")]
-    public IActionResult Put(int id, [FromBody] UpdateProjectModel updateProjectModel)
-    {
-        if (updateProjectModel.Description.Length > 200)
-        {
-            return BadRequest();
-        }
+        _projectService.Update(updatProjectInputModel);
 
         return NoContent();
     }
@@ -51,25 +67,32 @@ public class ProjectsController : ControllerBase
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)
     {
+        _projectService.Delete(id);
+        
+        return NoContent();
+    }
 
-        return NoContent();
-    }
-    
     [HttpPost("{id}/comments")]
-    public IActionResult PostComment(int id, [FromBody] CreateCommentModel createCommentModel)
+    public IActionResult PostComment(int id, [FromBody] CreateCommentInputModel createCommentInputModel)
     {
+        _projectService.CreateComment(createCommentInputModel);
+        
         return NoContent();
     }
-    
+
     [HttpPut("{id}/start")]
     public IActionResult Start(int id)
     {
+        _projectService.Start(id);
+        
         return NoContent();
     }
 
     [HttpPut("{id}/finish")]
     public IActionResult Finish(int id)
     {
+        _projectService.Finish(id);
+        
         return NoContent();
     }
 }

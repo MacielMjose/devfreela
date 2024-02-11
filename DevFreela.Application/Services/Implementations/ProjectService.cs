@@ -20,16 +20,19 @@ public class ProjectService : IProjectService
         var projects = _devFreelaDbContext.Projects.ToList();
 
         var projectsViewModel = projects
-            .Select(p => new ProjectViewModel(p.Title, p.CreatedAt))
+            .Select(p => new ProjectViewModel(p.Id, p.Title, p.CreatedAt))
             .ToList();
 
         return projectsViewModel;
     }
 
-    public ProjectDetailsViewModel GetById(int id)
+    public ProjectDetailsViewModel? GetById(int id)
     {
         var project = _devFreelaDbContext.Projects.SingleOrDefault(p => p.Id == id);
 
+        if (project == null)
+            return null;
+        
         var projectDetailViewModel = new ProjectDetailsViewModel(
             project.Id,
             project.Title,
@@ -53,7 +56,8 @@ public class ProjectService : IProjectService
 
     public void Update(UpdatProjectInputModel updatProjectInputModel)
     {
-        throw new NotImplementedException();
+        var project = _devFreelaDbContext.Projects.SingleOrDefault(p => p.Id == updatProjectInputModel.Id);
+        project?.Update(updatProjectInputModel.Title, updatProjectInputModel.Description, updatProjectInputModel.TotalCost);
     }
 
     public void Delete(int id)
@@ -72,11 +76,13 @@ public class ProjectService : IProjectService
 
     public void Start(int id)
     {
-        throw new NotImplementedException();
+        var project = _devFreelaDbContext.Projects.SingleOrDefault(p => p.Id == id);
+        project?.Start();
     }
 
     public void Finish(int id)
     {
-        throw new NotImplementedException();
+        var project = _devFreelaDbContext.Projects.SingleOrDefault(p => p.Id == id);
+        project?.Finish();
     }
 }
