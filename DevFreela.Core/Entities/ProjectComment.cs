@@ -11,6 +11,9 @@ public class ProjectComment : BaseEntity
 
     public string Content { get; private set; }
     public int IdProject { get; set; }
+    public Project Project { get; set; }
     public int IdUser { get; set; }
+
+    public User User { get; set; }
     public DateTime CreatedAt { get; set; }
 }
